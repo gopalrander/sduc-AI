@@ -23,7 +23,6 @@ print ("Most Frequent Words :", wordCount[totalWords-5:totalWords]) #maximum use
 #AlphaLE[i][j] > 0  => At position i, ('a' + Alpha[i][j] -1)th character predcited to appear.
 #AlphaLE[i][j] < 0  => At position i, ('a' - Alpha[i][j] -1)th character predcited not to appear.
 
-
 #Case#1
 #AlphaLE = [[] for i in range (wordLength)]
 
