@@ -17,14 +17,14 @@ for i in range (totalWords):
 
 wordCount.sort(key= lambda wordCount : wordCount[1]);
 
-print ("Least frequent Words : ", wordCount[0:5]) #minimum used
-print ("Most Frequent Words :", wordCount[totalWords-5:totalWords]) #maximum used
+print ("Least frequent Words : ", wordCount[0:15]) #minimum used
+print ("Most Frequent Words :", wordCount[totalWords-15:totalWords]) #maximum used
 #AlphaLE denotes the Evidence information for predicted words.
 #AlphaLE[i][j] > 0  => At position i, ('a' + Alpha[i][j] -1)th character predcited to appear.
 #AlphaLE[i][j] < 0  => At position i, ('a' - Alpha[i][j] -1)th character predcited not to appear.
 
 #Case#1
-#AlphaLE = [[] for i in range (wordLength)]
+AlphaLE = [[] for i in range (wordLength)]
 
 #Case#2
 #AlphaLE = [[-1, -9] for i in range (wordLength)]
@@ -62,11 +62,10 @@ print ("Most Frequent Words :", wordCount[totalWords-5:totalWords]) #maximum use
 #AlphaLE[3] = [-1, -4, 9]
 
 #Case10
-AlphaLE = [[-1, -5, -9, -15, -19, -21] for i in range (wordLength)]
-AlphaLE[1] = [-1, -5, -9, -15, -19, 21]
+#AlphaLE = [[-1, -5, -9, -15, -19, -21] for i in range (wordLength)]
+#AlphaLE[1] = [-1, -5, -9, -15, -19, 21]
 
 AlphaP = [0 for i in range(26)]
-PosteriorProbability = [0 for i in range(totalWords)]
 
 WordP = [(wordCount[i][1]/totalWords)for i in range(totalWords)]
 
@@ -106,7 +105,6 @@ def predictiveProbability():
 			prob = prob * flag;
 			if (prob == 1):
 				prob = prob * ProLEGivenW(w) * WordP[w];
-			#print ('posteriorProbability calculated for %d', w)	
 			pdp = pdp + prob;   
 		AlphaP[l] = pdp/denominator;
 
