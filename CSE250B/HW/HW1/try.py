@@ -6,15 +6,13 @@ from array import array;
 import threading
 import queue;
 from multiprocessing import Pool;
+import numpy as np;
+from scipy import linalg;
 
     
 os.chdir('D:\\UCSD\\F16\\sduc-AI\\CSE250B\\HW\\HW1')
 
 #distance b/w two vectors
-
-A = [4, 3]
-B = [3, 4]
-
 q = queue.Queue()
 labelTrainingSet = [];
 imageTrainingSet = [];
@@ -35,6 +33,8 @@ def diff_1NN_p(A, B, p):
          print (len(A), len(B))
          return math.nan;
 
+         
+
 #print (diff_1NN_p(A, B, 1))
 def loadData():
         with gzip.open("train-labels-idx1-ubyte.gz", 'rb') as file:
@@ -42,6 +42,7 @@ def loadData():
             #print (magicNum, size)
             global labelTrainingSet
             labelTrainingSet = array("B", file.read())
+            labelTrainingSet = np.array(labelTrainingSet)
             #print (labelTrainingSet[0:10])
 
         with gzip.open("t10k-labels-idx1-ubyte.gz", 'rb') as file:
@@ -49,6 +50,7 @@ def loadData():
             #print (magicNum, size)
             global labelTestSet
             labelTestSet = array("B", file.read())
+            labelTestSet = np.array(labelTestSet)
             #print (labelTestSet[0:10])
 
         with gzip.open("train-images-idx3-ubyte.gz",'rb') as file:
@@ -56,12 +58,15 @@ def loadData():
             print (magicNum, size, rows, cols)
 
             imagesTemp = array("B", file.read())
+            imagesTemp = np.array(imagesTemp)
 
+            global imageTrainingSet
+            #for i in range (size):
+                #imageTrainingSet.append([0]* rows*cols)
+            imageTrainingSet = np.zeros(shape=(size, rows*cols), dtype= np.int) 
+                
             for i in range (size):
-                imageTrainingSet.append([0]* rows*cols)
-
-            for i in range (size):
-                imageTrainingSet[i][:] = imagesTemp[rows*cols*i : rows*cols*(i+1)]
+                imageTrainingSet[i] = imagesTemp[rows*cols*i : rows*cols*(i+1)]
             #print(imageTrainingSet[0])
             
         with gzip.open("t10k-images-idx3-ubyte.gz",'rb') as file:
@@ -69,12 +74,15 @@ def loadData():
             print (magicNum, size, rows, cols)
 
             imagesTemp = array("B", file.read())
+            imagesTemp = np.array(imagesTemp)
 
+            global imageTestSet
+            #for i in range (size):
+            #    imageTestSet.append([0]* rows*cols)
+            imageTestSet = np.zeros(shape=(size, rows*cols), dtype= np.int)
+            
             for i in range (size):
-                imageTestSet.append([0]* rows*cols)
-
-            for i in range (size):
-                imageTestSet[i][:] = imagesTemp[rows*cols*i : rows*cols*(i+1)]
+                imageTestSet[i] = imagesTemp[rows*cols*i : rows*cols*(i+1)]
 
             #print(imageTestSet[0])
 
@@ -83,7 +91,8 @@ def find_NN(testIndex):
     minDist = math.inf
     labelIndex = -1
     for i in range (len(imageTrainingSet)):
-        curDist = diff_1NN_p(imageTestSet[testIndex], imageTrainingSet[i], 2)
+        #curDist = diff_1NN_p(imageTestSet[testIndex], imageTrainingSet[i], 2)
+        curDist = linalg.norm(imageTestSet[testIndex] - imageTrainingSet[i])
         print(curDist);
         if (curDist < minDist):
             minDist = curDist
@@ -91,8 +100,7 @@ def find_NN(testIndex):
     #print ("TestLabel ", "NN-Label")
     print (testIndex, labelIndex, minDist);
     #print (labelTestSet[testIndex], labelTrainingSet[labelIndex]) 
-    
-    return labelIndex
+    return (labelTrainingSet[labelIndex] == labelTestSet[testIndex])
 
 class ThreadClass(threading.Thread):
     def __init__(self, index):
@@ -120,7 +128,9 @@ class ThreadClass(threading.Thread):
             
    
 loadData();
+result = [];
 #find_testError();
 if __name__ == '__main__':
         with Pool(6) as p:
-            result = [p.map(find_NN, list(range(len(labelTestSet))))]
+            result = np.array(p.map(find_NN, np.arange(1000)))
+        print (np.count_nonzero(result))
