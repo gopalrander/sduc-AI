@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
 """
 Created on Sun Oct 23 00:32:51 2016
-
 @author: gopal
 """
 
@@ -9,12 +7,12 @@ import numpy as np;
 import math;
 import matplotlib.pyplot as plt;
  
-vocab = np.loadtxt('vocab.txt', dtype=str, unpack=True)
+vocab = np.loadtxt('vocab250A.txt', dtype=str, unpack=True)
 vocabCount = np.loadtxt('unigram.txt', dtype=float, unpack=True)
 preWordId, nextWordId, followCount = np.loadtxt('bigram.txt', dtype=int, unpack=True)
 
 #returns index of a word in vocab. fixes the byte encoding b' match.
-def WhatIndex(s): 
+def WhatIndex(s):
     s = "b'" + s + "'"
     result = np.where(vocab==s)[0]
     if len(result) == 0 :
@@ -27,6 +25,7 @@ totalWords = np.sum(vocabCount)
 unigramP = np.divide(vocabCount, totalWords)
 
 bigramP = np.zeros(shape=(lenVocab, lenVocab), dtype=float)
+
 for i in range(len(preWordId)):
     bigramP[preWordId[i]-1][nextWordId[i]-1] = followCount[i]
 bigramP = bigramP/bigramP.sum(axis=1, keepdims=True)
@@ -92,14 +91,17 @@ def MixedSentence(s, lmda):
             if mixedP > 0.0:
                 logLikelihood += math.log(mixedP)
             else:
-                logLikelihood += math.inf
+                logLikelihood -= math.inf
         else:
             logLikelihood -=math.inf
             print (vocab[indices[i-1]], vocab[indices[i]])
     return logLikelihood
 
-def lmbdFunc(s):
-    xRange = np.arange(0,1,0.00001)
+def lmbdFunc(s, step):
+    xRange = np.arange(0,1,step)
     y = np.array([MixedSentence(s, x) for x in xRange])
-    print (xRange[np.argmax(y)])
+    print ('Optimum lambda:', xRange[np.argmax(y)])
+    print ('Maximum Likelihood: ' , np.max(y))
     plt.plot(xRange, y)
+    plt.xlabel('lambda')
+    plt.ylabel('LogLikelihood in Mixed model')
