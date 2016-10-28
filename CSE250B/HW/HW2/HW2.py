@@ -31,17 +31,20 @@ def DocClassRepresent(trainDocId, trainWordId, trainCount, trainLabel, vocab, vo
 
     modifiedVocab = vocab[np.where(vocab!='-1 stopword')]
     DocClassRepresent = np.ones(shape=(totalClasses, len(modifiedVocab)), dtype=float)
+    idf = np.ones(len(modifiedVocab))
     
     for i in range(len(trainDocId)):
         if vocab[trainWordId[i]-1] != '-1 stopword':
             DocClassRepresent[trainLabel[trainDocId[i]-1]-1][trainWordId[i]-1-indexFix[trainWordId[i]-1]]+= trainCount[i]
+            idf[trainWordId[i]-1-indexFix[trainWordId[i]-1]]+=1
 
+    DocClassRepresent = (DocClassRepresent)*np.log(1/(idf+1))
     DocClassRepresent = np.log(DocClassRepresent/DocClassRepresent.sum(axis=1, keepdims=True))
     #CanReject = np.flatnonzero((np.amax(DocClassRepresent, axis=0) - np.amin(DocClassRepresent, axis=0)) < 1.5)
     #print(modifiedVocab[CanReject])
     VarianceSort = np.argsort(np.var(DocClassRepresent, axis=0))
     return DocClassRepresent, modifiedVocab, indexFixBits, VarianceSort
-
+    
 def testDocRepresent(testDocId, testWordId, testCount, vocab, vocabLen, indexFix, testLabelLength):
     testDocs = np.zeros(shape=(testLabelLength, vocabLen), dtype=int)
     indexFix = np.cumsum(indexFixBits)
@@ -66,35 +69,35 @@ testLabelLength = len(testLabel)
 vocabLen = len(vocab)
 indexFixBits = np.zeros(vocabLen, dtype=int)
 densityPie = DensityPie(trainLabel, trainLabelLen, totalClasses)
-M = 5000
+M = 20000
 #Step1
 trainDocClass, modifiedVocab, indexFixBits, VarianceSort = DocClassRepresent(trainDocId, trainWordId, trainCount, trainLabel, vocab, vocabLen, totalClasses, stopVocab, indexFixBits)
 
-#testDocRep = testDocRepresent(testDocId, testWordId, testCount, vocab, len(modifiedVocab), indexFixBits, testLabelLength)
-#result = Classify(testDocRep, trainDocClass, densityPie)
+#testDocRep, invalidDocsId = testDocRepresent(testDocId, testWordId, testCount, vocab, len(modifiedVocab), indexFixBits, testLabelLength)
+#result = Classify(testDocRep, invalidDocsId, trainDocClass, densityPie)
 #print ( np.count_nonzero((result+1)-testLabel));
 #trainColnSum = np.sum(trainDocClass, axis=0)
 #classLikelyWords = np.array(modifiedVocab[np.argsort(trainDocClass/trainColnSum, axis=1)])
 
 #Step2
 stopWordsStep2 = stopVocab
-
+#
 #stopWordsStep2 = np.append(stopWordsStep2, modifiedVocab[VarianceSort[:-M]])
 #trainDocClass, modifiedVocab, indexFixBits, VarianceSort = DocClassRepresent(trainDocId, trainWordId, trainCount, trainLabel, vocab, vocabLen, totalClasses, stopWordsStep2, indexFixBits)
-
+#
 #testDocRep, invalidDocsId = testDocRepresent(testDocId, testWordId, testCount, vocab, len(modifiedVocab), indexFixBits, testLabelLength)
 #result = Classify(testDocRep, invalidDocsId, trainDocClass, densityPie)
 #print (M, np.count_nonzero((result+1)-testLabel));
 #trainColnSum = np.sum(trainDocClass, axis=0)
 #classLikelyWords = np.array(modifiedVocab[np.argsort(trainDocClass/trainColnSum, axis=1)])
 #
-
 #step3
 trainColnSum = np.sum(trainDocClass, axis=0)
 trainColVar = np.var(trainDocClass, axis=0)
 maxDiff = np.zeros(shape=(np.shape(trainDocClass)))
 for i in range(totalClasses):
-    maxDiff[i] = ((totalClasses*trainDocClass[i] - trainColnSum) / trainColnSum) + trainColVar
+    #maxDiff[i] = ((totalClasses*trainDocClass[i] - trainColnSum) / trainColnSum) + trainColVar
+    maxDiff[i] = (trainDocClass[i] * trainColVar)/trainColnSum
 res = np.argsort(-maxDiff, axis=1)
 flag = np.zeros(len(modifiedVocab), dtype=bool)
 
@@ -115,6 +118,28 @@ trainDocClass, modifiedVocab, indexFixBits, VarianceSort = DocClassRepresent(tra
 testDocRep, invalidDocsId = testDocRepresent(testDocId, testWordId, testCount, vocab, len(modifiedVocab), indexFixBits, testLabelLength)
 result = Classify(testDocRep, invalidDocsId, trainDocClass, densityPie)
 print (M, np.count_nonzero((result+1)-testLabel));
+
+classwiseMis = np.zeros(totalClasses)
+classwiseHit = np.zeros(totalClasses)
+for i in range(len(testLabel)):
+    if result[i]+1 != testLabel[i]:
+        classwiseMis[testLabel[i]-1]+=1;
+    else:
+        classwiseHit[testLabel[i]-1]+=1;
+    
 trainColnSum = np.sum(trainDocClass, axis=0)
 classLikelyWords = np.array(modifiedVocab[np.argsort(trainDocClass/trainColnSum, axis=1)])
 
+#step 4 random
+#wordsToKeep= np.random.choice(len(modifiedVocab)-1, M, replace=False)
+#flag = np.zeros(len(modifiedVocab), dtype=bool)
+#for i in range(len(wordsToKeep)): flag[wordsToKeep[i]]= True;
+#wordsToRemove = np.array(modifiedVocab[np.where(flag==False)])
+#stopWordsStep3 = np.append(stopWordsStep2 , wordsToRemove)
+#trainDocClass, modifiedVocab, indexFixBits, VarianceSort = DocClassRepresent(trainDocId, trainWordId, trainCount, trainLabel, vocab, vocabLen, totalClasses, stopWordsStep3, indexFixBits)
+#
+#testDocRep, invalidDocsId = testDocRepresent(testDocId, testWordId, testCount, vocab, len(modifiedVocab), indexFixBits, testLabelLength)
+#result = Classify(testDocRep, invalidDocsId, trainDocClass, densityPie)
+#print (M, np.count_nonzero((result+1)-testLabel));
+#trainColnSum = np.sum(trainDocClass, axis=0)
+#classLikelyWords = np.array(modifiedVocab[np.argsort(trainDocClass/trainColnSum, axis=1)])
