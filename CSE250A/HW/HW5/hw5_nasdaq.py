@@ -14,11 +14,11 @@ A = np.zeros(shape=(d,d), dtype='float')
 B = np.zeros(d, dtype='float')
 for i in range(d,len(nasdaq2k)):
     X = np.array(nasdaq2k[i-d:i])
-    A+=np.outer(X,X)
-    B+= nasdaq2k[i] * X
+    A= np.add(A, np.outer(X,X))
+    B= np.add(B, nasdaq2k[i] * X)
 
 a = np.linalg.solve(A,B)
-print('a=', a)
+print('[a4 a3 a2 a1] = ', a)
 
 def Prob(y, X, W):
     Py_x = 1/(np.sqrt(2 * np.pi)) * np.exp( - (y-W*X)**2 / 2)
@@ -30,15 +30,16 @@ for i in range (d, len(nasdaq2k)):
     Y = nasdaq2k[i]
     mse2k = mse2k + ((Y-np.dot(a,X))**2)
     
+mse2k = mse2k / (len(nasdaq2k)-d)
 print('Mean Squared error on data from year 2000:', mse2k)
 
-mse2k = mse2k / (len(nasdaq2k)-d)
+
 
 mse2k1 =0.0
 for i in range (d, len(nasdaq2k1)):
-    X = np.array(nasdaq2k[i-d:i])
+    X = np.array(nasdaq2k1[i-d:i])
     Y = nasdaq2k1[i]
     mse2k1 = mse2k1 + ((Y-np.dot(a,X))**2)
 
-mse2k = mse2k1 / (len(nasdaq2k1)-d)
+mse2k1 = mse2k1 / (len(nasdaq2k1)-d)
 print('Mean Squared error on data from year 2001:', mse2k1)

@@ -4,6 +4,8 @@ Created on Thu Oct 27 23:56:30 2016
 
 @author: gopal
 """
+print ("Logistic Regression using Newton's Method")
+
 import numpy as np
 import matplotlib.pyplot as plt
 def prepData():
@@ -66,7 +68,7 @@ for loop in range(iterations):
     errorRates = np.append(errorRates, [errorRate], axis=0)
     loops = np.append(loops, [loop], axis=0)
     llhoods = np.append(llhoods, [llhood], axis=0)
-    
+    print (llhood)
 
 plt.figure()
 f, axes = plt.subplots(1,1)
@@ -82,3 +84,4 @@ W_mesh = np.reshape(W, (8,8))
 
 testClassify = Classify(testData, W)
 testErrorRate = 100*np.count_nonzero(testClassify-testLabel)/len(testLabel)
+print("Test Error Rate:", testErrorRate)
