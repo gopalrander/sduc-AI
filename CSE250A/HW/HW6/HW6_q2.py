@@ -32,8 +32,8 @@ def LLhood(OX, OY, PZ_X):
 def countMistakes(PY_X):
     return np.count_nonzero(PY_X<0.5)
 
-def EStep(OX,OY,PZ_X):
-    #PZX_XY
+def run(OX,OY,PZ_X):
+    #PZX_XY E-step
     for loop in range(257):
         PY_X = np.array([getPY_X(PZ_X, OX[i],OY[i]) for i in range(len(OX))])
         a = (OX.T/PY_X).T * PZ_X
@@ -41,4 +41,4 @@ def EStep(OX,OY,PZ_X):
         PnewZ_X = np.array([PnewZ_X[i]/np.count_nonzero(OX.T[i]) for i in range(len(PnewZ_X))])
         if (loop & loop-1) == 0:
             print (loop, countMistakes(PY_X), LLhood(OX, OY, PZ_X))
-        PZ_X = PnewZ_X
+        PZ_X = PnewZ_X #M-step

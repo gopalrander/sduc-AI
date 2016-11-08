@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Nov  6 20:15:00 2016
-
 @author: gopal
 """
 import numpy as np
@@ -32,7 +31,7 @@ def Q(x,y):
 
 def ConvergerAux(x0, loops, func, funcd):
     x = x0;
-    it = np.zeros(loops)
+    it = np.zeros(loops, dtype=int)
     xVal = np.zeros(loops)
     for i in range(loops):
         xVal[i]= x
@@ -46,11 +45,12 @@ def ConvergerAux(x0, loops, func, funcd):
 
 def ConvergerNewton(x0, loops):
     x = x0;
-    it = np.zeros(loops)
+    it = np.zeros(loops, dtype=int)
     xVal = np.zeros(loops)
     for i in range(loops):
         xVal[i]= x
         it[i] = i
+        print (it[i], x)
         x = x - (fd(x)/fdd(x))
     plt.plot(it, xVal)
     plt.xlabel("iterations(n)")
@@ -69,4 +69,9 @@ def plot(l,r,step,func, y0=0):
     if y0!=0: ylabel+= (', '+str(y0))
     ylabel += ')'                               
     plt.ylabel(ylabel)
-
+    
+def plotAll(l,r,step):
+    plot(l,r,step,f, y0=0)
+    plot(l,r,step,Q, y0=1)
+    plot(l,r,step,Q, y0=-2)
+        
