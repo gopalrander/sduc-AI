@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-#data1 = np.loadtxt('data1.txt')
-data1 = np.loadtxt('data2.txt')
+data1 = np.loadtxt('data1.txt')
+#data1 = np.loadtxt('data2.txt')
 m = np.shape(data1)[1]; #number of features (included the extra constant)
 n = np.shape(data1)[0]; #number of data points
 
