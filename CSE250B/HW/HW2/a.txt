@@ -1,0 +1,17 @@
+Remove the stopwords from Vocabulary
+For each class, Calculate the class prior density. 
+For each class, Calculate the probaility distribution over the Vocabulary. Apply smoothing to the count of words and take natural log of it.
+Calculate the inverse document frequncy for each word in vocabulary. Weight the probabililty calculated in step 2 with inverse document frequncy.
+Let Mat[i][j] be the value for Class i and word j.
+Calculate the variance of every word's distribution across all classes. Var[j]
+Calculate the class-wise distribution of word j. C[j]
+Weight Mat[i][j] with Var[j] and 1/C[j]
+
+For each class select top M/m words which have maximum value of Mat[i][j] and keep them in another matrix CAL[modifiedVocab][classes].
+ModifiedVocab = Reduced Vocabulary after selection.
+
+Classification
+Represent test doucument in terms of Modified vocabulary word counts. If test document does not contain any word from modified vocabulary, mark it invalid for now.
+Use the classifer matrix CAL[modifiedVocab][classes] to calculate COUNT(wj) * log Pr(wj \in Ai | Ai) for each class. Multiply it with class prior density. 
+Select the class which maximizes this value.
+If the document was marked invalid, simply return the class which has the highest density.
